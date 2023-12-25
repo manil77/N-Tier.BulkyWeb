@@ -31,7 +31,9 @@ namespace Bulky.DataAccess.Data
                      Author = "George R. Martin",
                      ListPrice = 1000,
                      Price50 = 950,
-                     Price100 = 900
+                     Price100 = 900,
+                     CategoryId=1,
+                     ImageUrl=""
                  },
 
                 new Product
@@ -43,7 +45,9 @@ namespace Bulky.DataAccess.Data
                     Author = "Manil Maharjan",
                     ListPrice = 500,
                     Price50 = 450,
-                    Price100 = 400
+                    Price100 = 400,
+                    CategoryId = 3,
+                    ImageUrl = ""
                 },
                 new Product
                 {
@@ -54,7 +58,9 @@ namespace Bulky.DataAccess.Data
                     Author = "George R. Martin",
                     ListPrice = 700,
                     Price50 = 650,
-                    Price100 = 600
+                    Price100 = 600,
+                    CategoryId = 3,
+                    ImageUrl = ""
                 }
                 );
         }
