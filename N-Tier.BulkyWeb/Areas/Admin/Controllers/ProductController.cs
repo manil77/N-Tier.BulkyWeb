@@ -1,5 +1,6 @@
 ﻿using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
+using Bulky.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -20,35 +21,62 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
             return View(objProductList);
         }
 
-        public IActionResult Create()
+        public IActionResult Upsert(int? id)
         {
-            IEnumerable<SelectListItem> categoryList = _unitOfWork.Category.GetAll().Select(x => new SelectListItem()
+
+            ProductVm productVm = new()
             {
-                Text = x.Name,
-                Value = x.Id.ToString()
-            });
-            ViewBag.CategoryList = categoryList;
-            return View();
+                Product = new Product(),
+                CategoryList = _unitOfWork.Category.GetAll().Select(x => new SelectListItem()
+                {
+                    Text = x.Name,
+                    Value = x.Id.ToString()
+                })
+            };
+
+            if (id == null || id == 0)
+            {
+                //create
+                return View(productVm); 
+            }
+            else {
+                //update
+                productVm.Product = _unitOfWork.Product.Get(x => x.Id == id);
+
+                return View(productVm);
+            }
         }
 
         [HttpPost]
-        public IActionResult Create(Product product) {
+        public IActionResult Upsert(ProductVm productVm, IFormFile? file)
+        {
 
-            if (ModelState.IsValid) {
-                _unitOfWork.Product.Add(product);
+            if (ModelState.IsValid)
+            {
+                _unitOfWork.Product.Add(productVm.Product);
                 _unitOfWork.Save();
                 TempData["success"] = "Product has been created";
                 return RedirectToAction("Index");
             }
-            TempData["error"] = "Product has not been created";
-            return View();
+            else
+            {
+                productVm.CategoryList = _unitOfWork.Category.GetAll().Select(x => new SelectListItem()
+                {
+                    Text = x.Name,
+                    Value = x.Id.ToString()
+                });
+                TempData["error"] = "Product has not been created";
+                return View(productVm);
+            }
         }
 
 
-        public IActionResult Edit(int id) {
+        public IActionResult Edit(int id)
+        {
             Product result = _unitOfWork.Product.Get(x => x.Id == id);
 
-            if (result == null) { 
+            if (result == null)
+            {
                 return NotFound();
             }
             return View(result);
@@ -57,7 +85,8 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult Edit(Product product)
         {
-            if (ModelState.IsValid) { 
+            if (ModelState.IsValid)
+            {
                 _unitOfWork.Product.Update(product);
                 _unitOfWork.Save();
                 TempData["success"] = "Product has been updated";
@@ -80,9 +109,10 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        public IActionResult DeleteProduct(int id) {
+        public IActionResult DeleteProduct(int id)
+        {
 
-            var deletionProduct = _unitOfWork.Product.Get(x=>x.Id == id);
+            var deletionProduct = _unitOfWork.Product.Get(x => x.Id == id);
 
             _unitOfWork.Product.Remove(deletionProduct);
             _unitOfWork.Save();
