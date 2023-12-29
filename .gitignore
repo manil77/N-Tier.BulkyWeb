@@ -365,6 +365,3 @@ FodyWeavers.xsd
 # CherryPick Ignore
 /N-Tier.BulkyWeb/appsettings.json
 /N-Tier.BulkyWeb/appsettings.json
-
-# Ignoring migrations
-/N-Tier.Bulky.DataAccess/Migrations/*
