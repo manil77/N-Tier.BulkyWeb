@@ -10,10 +10,12 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
     public class ProductController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        public readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductController(IUnitOfWork unitOfWork)
+        public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
             _unitOfWork = unitOfWork;
+            _webHostEnvironment = webHostEnvironment;
         }
         public IActionResult Index()
         {
@@ -37,9 +39,10 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
             if (id == null || id == 0)
             {
                 //create
-                return View(productVm); 
+                return View(productVm);
             }
-            else {
+            else
+            {
                 //update
                 productVm.Product = _unitOfWork.Product.Get(x => x.Id == id);
 
@@ -53,6 +56,17 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+                if (file != null)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var productPath = Path.Combine(wwwRootPath, @"images/products");
+
+                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create)) {
+                        file.CopyTo(fileStream);
+                    }
+                    productVm.Product.ImageUrl = @"images/products/"+fileName;
+                }
                 _unitOfWork.Product.Add(productVm.Product);
                 _unitOfWork.Save();
                 TempData["success"] = "Product has been created";
