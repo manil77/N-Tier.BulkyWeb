@@ -28,15 +28,7 @@
                     </th>
 
                     <th>
-                        Product Description
-                    </th>
-
-                    <th>
                         ISBN
-                    </th>
-
-                    <th>
-                        Author
                     </th>
 
                     <th>
@@ -44,12 +36,12 @@
                     </th>
 
                     <th>
-                        Price for 50
+                        Author
                     </th>
 
                     <th>
-                        Price for 100
-                    </th>
+                        Category
+                    </th>                    
 
                     <th>Edit</th>
                     <th>Delete</th>
@@ -61,14 +53,10 @@
                 {
                     <tr>
                         <td>@item.Title</td>
-                        <td>@item.Description</td>
                         <td>@item.ISBN</td>
-                        <td>@item.Author</td>
                         <td>@item.ListPrice</td>
-                        <td>@item.Price50</td>
-                        <td>@item.Price100</td>
-
-
+                        <td>@item.Author</td>
+                        <td>@item.Category.Name</td>
                         <td>
                             <div class="w-75 btn-group" role="group">
                                 <a asp-controller="Product" asp-action="Upsert" asp-route-id="@item.Id" class="btn btn-primary mx-2">

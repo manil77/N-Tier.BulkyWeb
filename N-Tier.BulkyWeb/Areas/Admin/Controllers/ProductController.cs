@@ -19,7 +19,7 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
         }
         public IActionResult Index()
         {
-            List<Product> objProductList = _unitOfWork.Product.GetAll().ToList();
+            List<Product> objProductList = _unitOfWork.Product.GetAll("Category").ToList();
             return View(objProductList);
         }
 
@@ -60,14 +60,32 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
                 if (file != null)
                 {
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    var productPath = Path.Combine(wwwRootPath, @"images/products");
+                    var productPath = Path.Combine(wwwRootPath, @"images\products");
 
-                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create)) {
+                    if (!string.IsNullOrEmpty(productVm.Product.ImageUrl))
+                    {
+                        var oldImagePath = Path.Combine(wwwRootPath, productVm.Product.ImageUrl.TrimStart('\\'));
+
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
+                    {
                         file.CopyTo(fileStream);
                     }
-                    productVm.Product.ImageUrl = @"images/products/"+fileName;
+                    productVm.Product.ImageUrl = @"\images\products\" + fileName;
                 }
-                _unitOfWork.Product.Add(productVm.Product);
+
+                if (productVm.Product.Id == 0)
+                {
+                    _unitOfWork.Product.Add(productVm.Product);
+                }
+                else {
+                    _unitOfWork.Product.Update(productVm.Product);
+                }
                 _unitOfWork.Save();
                 TempData["success"] = "Product has been created";
                 return RedirectToAction("Index");
