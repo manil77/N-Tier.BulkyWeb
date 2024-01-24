@@ -129,7 +129,7 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
         }
 
 
-        public IActionResult Delete(int id)
+        /*public IActionResult Delete(int id)
         {
             Product result = _unitOfWork.Product.Get(x => x.Id == id);
 
@@ -151,6 +151,40 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
 
             TempData["success"] = "Product has been deleted";
             return RedirectToAction("Index");
+        }*/
+
+        #region API Calls
+        [HttpGet]
+
+        public IActionResult GetAll() {
+            var result = _unitOfWork.Product.GetAll("Category");
+
+            return Json( new { data = result});
         }
+
+        [HttpDelete]
+        public IActionResult Delete(int? id) 
+        {
+
+            var productToBeDelete = _unitOfWork.Product.Get(u => u.Id == id);
+
+            if (productToBeDelete == null) {
+                return Json(new { success = false, message = "Error: Could not find the data" });
+            }
+
+            var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath,
+                productToBeDelete.ImageUrl.TrimStart('\\'));
+
+
+            if (System.IO.File.Exists(oldImagePath)) {
+                System.IO.File.Delete(oldImagePath);
+            }
+
+            _unitOfWork.Product.Remove(productToBeDelete);
+            _unitOfWork.Save();
+
+            return Json(new { success = true, message = "Delete Successful" });
+        }
+        #endregion
     }
 }
