@@ -18,6 +18,10 @@
     <None Remove="Controllers\**" />
   </ItemGroup>
 
+	
+	
+	
+	
   <ItemGroup>
     <Compile Include="Areas\Admin\Controllers\CategoryController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProductController.cs" />
