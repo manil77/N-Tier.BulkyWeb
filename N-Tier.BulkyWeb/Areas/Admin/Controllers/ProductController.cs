@@ -3,6 +3,7 @@ using Bulky.Models;
 using Bulky.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Hosting;
 
 namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
 {
@@ -19,7 +20,7 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
         }
         public IActionResult Index()
         {
-            List<Product> objProductList = _unitOfWork.Product.GetAll("Category").ToList();
+            List<Product> objProductList = _unitOfWork.Product.GetAll(null, "Category").ToList();
             return View(objProductList);
         }
 
@@ -49,8 +50,54 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
                 return View(productVm);
             }
         }
-
+        //POST
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Upsert(ProductVm obj, IFormFile? file)
+        {
+
+            if (ModelState.IsValid)
+            {
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+                if (file != null)
+                {
+                    string fileName = Guid.NewGuid().ToString();
+                    var uploads = Path.Combine(wwwRootPath, @"images\products");
+                    var extension = Path.GetExtension(file.FileName);
+
+                    if (obj.Product.ImageUrl != null)
+                    {
+                        var oldImagePath = Path.Combine(wwwRootPath, obj.Product.ImageUrl.TrimStart('\\'));
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    using (var fileStreams = new FileStream(Path.Combine(uploads, fileName + extension), FileMode.Create))
+                    {
+                        file.CopyTo(fileStreams);
+                    }
+                    obj.Product.ImageUrl = @"\images\products\" + fileName + extension;
+
+                }
+                if (obj.Product.Id == 0)
+                {
+                    _unitOfWork.Product.Add(obj.Product);
+                }
+                else
+                {
+                    _unitOfWork.Product.Update(obj.Product);
+                }
+                _unitOfWork.Save();
+                TempData["success"] = "Product created successfully";
+                return RedirectToAction("Index");
+            }
+            return View(obj);
+        }
+
+
+        /*[HttpPost]
         public IActionResult Upsert(ProductVm productVm, IFormFile? file)
         {
 
@@ -100,7 +147,7 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
                 TempData["error"] = "Product has not been created";
                 return View(productVm);
             }
-        }
+        }*/
 
 
         public IActionResult Edit(int id)
@@ -157,7 +204,7 @@ namespace N_Tier.BulkyWeb.Areas.Admin.Controllers
         [HttpGet]
 
         public IActionResult GetAll() {
-            var result = _unitOfWork.Product.GetAll("Category");
+            var result = _unitOfWork.Product.GetAll(null, "Category");
 
             return Json( new { data = result});
         }

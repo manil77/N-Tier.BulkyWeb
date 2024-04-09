@@ -22,34 +22,50 @@ namespace N_Tier.BulkyWeb.Areas.Customer.Controllers
 
         public IActionResult Index()
         {
-            IEnumerable<Product> products = _unitOfWork.Product.GetAll(includeProperties:"Category");    
+            IEnumerable<Product> products = _unitOfWork.Product.GetAll(includeProperties: "Category");
             return View(products);
         }
 
-        public IActionResult Detail(int id)
+        public IActionResult Detail(int productId)
         {
-           
+
             ShoppingCart objShoppingCart = new()
             {
-                Product = _unitOfWork.Product.Get(u => u.Id == id, includeProperties: "Category"),
-                Count = 1
+                Product = _unitOfWork.Product.Get(u => u.Id == productId, includeProperties: "Category"),
+                Count = 1,
+                ProductId = productId
             };
-            objShoppingCart.ProductId = objShoppingCart.Product.Id; 
+            objShoppingCart.ProductId = objShoppingCart.Product.Id;
             return View(objShoppingCart);
         }
         [HttpPost]
         [Authorize]
         public IActionResult Detail(ShoppingCart objShoppingCart)
         {
-            objShoppingCart.Id = 0;
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value; //ClaimsIdentity are provided by dot net team
 
             objShoppingCart.ApplicationUserId = userId;
 
-            _unitOfWork.ShoppingCart.Add(objShoppingCart);
+            ShoppingCart cartFromDb = _unitOfWork.ShoppingCart.Get(u => u.ProductId == objShoppingCart.ProductId && u.ApplicationUserId == objShoppingCart.ApplicationUserId);
+
+
+            if (cartFromDb != null)
+            {
+                //Increment or Decrement
+                cartFromDb.Count += objShoppingCart.Count;
+                _unitOfWork.ShoppingCart.Update(cartFromDb);
+            }
+            else
+            {
+                //Add new record to Db
+                _unitOfWork.ShoppingCart.Add(objShoppingCart);
+            }
+            TempData["success"] = "Card updated successfully!";
             _unitOfWork.Save();
-            return View();
+
+
+            return RedirectToAction(nameof(Index)); //nameof Provides all the methods available in HomeController
         }
 
         public IActionResult Privacy()
