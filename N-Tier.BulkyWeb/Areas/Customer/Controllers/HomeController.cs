@@ -1,7 +1,9 @@
 using Bulky.DataAccess.Repository;
 using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
+using Bulky.Utility;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -55,14 +57,17 @@ namespace N_Tier.BulkyWeb.Areas.Customer.Controllers
                 //Increment or Decrement
                 cartFromDb.Count += objShoppingCart.Count;
                 _unitOfWork.ShoppingCart.Update(cartFromDb);
+                _unitOfWork.Save();
             }
             else
             {
                 //Add new record to Db
                 _unitOfWork.ShoppingCart.Add(objShoppingCart);
+                _unitOfWork.Save();
+                HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == userId).Count());
             }
             TempData["success"] = "Card updated successfully!";
-            _unitOfWork.Save();
+           
 
 
             return RedirectToAction(nameof(Index)); //nameof Provides all the methods available in HomeController

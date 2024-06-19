@@ -14,6 +14,10 @@
     <None Remove="Controllers\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="Areas\Admin\Views\Order\PaymentConfirmation.cshtml" />
+  </ItemGroup>
+
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Bulky.DataAccess\Bulky.DataAccess.csproj" />
@@ -40,6 +44,21 @@
 	  </PackageReference>
 	  <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.1" />
 	  <PackageReference Include="Stripe.net" Version="41.9.0" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Areas\Admin\Views\Order\PaymentConfirmation.cshtml" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="Areas\Admin\Views\Order\PaymentConfirmation.cshtml" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <None Include="Areas\Admin\Views\Order\PaymentConfirmation.cshtml" />
 	</ItemGroup>
 
 </Project>
