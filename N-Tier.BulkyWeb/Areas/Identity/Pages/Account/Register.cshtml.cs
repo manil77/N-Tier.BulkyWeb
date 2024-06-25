@@ -43,7 +43,7 @@ namespace N_Tier.BulkyWeb.Areas.Identity.Pages.Account
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender,IUnitOfWork unitOfWork)
+            IEmailSender emailSender, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -115,7 +115,7 @@ namespace N_Tier.BulkyWeb.Areas.Identity.Pages.Account
             public string? Street { get; set; }
             public string? City { get; set; }
             public string? State { get; set; }
-            public string? PostalCode { get; set; } 
+            public string? PostalCode { get; set; }
             public string? PhoneNumber { get; set; }
             public int? CompanyId { get; set; }
             [ValidateNever]
@@ -125,17 +125,13 @@ namespace N_Tier.BulkyWeb.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            if (!_roleManager.RoleExistsAsync(SD.Role_Customer).GetAwaiter().GetResult()) { 
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Customer)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Company)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Admin)).GetAwaiter().GetResult();
-                _roleManager.CreateAsync(new IdentityRole(SD.Role_Employee)).GetAwaiter().GetResult();
-            }
+            
             Input = new()
             {
-                RoleList = _roleManager.Roles.Select(x => x.Name).Select(x => new SelectListItem {
-                    Text= x,
-                    Value= x
+                RoleList = _roleManager.Roles.Select(x => x.Name).Select(x => new SelectListItem
+                {
+                    Text = x,
+                    Value = x
                 }),
                 CompanyList = _unitOfWork.Company.GetAll().Select(x => new SelectListItem
                 {
@@ -164,7 +160,8 @@ namespace N_Tier.BulkyWeb.Areas.Identity.Pages.Account
                 user.State = Input.State;
                 user.PostalCode = Input.PostalCode;
 
-                if (Input.Role == SD.Role_Company) {
+                if (Input.Role == SD.Role_Company)
+                {
                     user.CompanyId = Input.CompanyId;
                 }
 
@@ -178,7 +175,8 @@ namespace N_Tier.BulkyWeb.Areas.Identity.Pages.Account
                     {
                         await _userManager.AddToRoleAsync(user, Input.Role);
                     }
-                    else {
+                    else
+                    {
                         await _userManager.AddToRoleAsync(user, SD.Role_Customer);
                     }
 
@@ -200,7 +198,14 @@ namespace N_Tier.BulkyWeb.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        if (User.IsInRole(SD.Role_Admin))
+                        {
+                            TempData["success"] = "New User Created Successfully!";
+                        }
+                        else
+                        {
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+                        }
                         return LocalRedirect(returnUrl);
                     }
                 }
